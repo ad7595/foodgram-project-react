@@ -1,0 +1,13 @@
+django==4.2.4
+psycopg2==2.9.6
+python-dotenv==1.0.0
+pillow==10.0.0
+gunicorn==21.2.0
+djangorestframework==3.14.0
+djoser==2.2.0
+psycopg2-binary==2.9.6
+pre-commit==3.3.3
+django-filter==23.2
+drf-extra-fields==3.7.0
+python-decouple==3.5
+flake8-django==1.4
