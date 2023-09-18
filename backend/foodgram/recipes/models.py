@@ -116,6 +116,28 @@ class RecipeIngredient(models.Model):
         ]
 
 
+class RecipeTag(models.Model):
+    """Модель связывающая тег и рецепта."""
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        verbose_name='Рецепт'
+    )
+    tag = models.ForeignKey(
+        Tag,
+        on_delete=models.CASCADE,
+        verbose_name='Тег'
+    )
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                fields=['recipe', 'tag'],
+                name='recipe_tag_unique'
+            )
+        ]
+
+
 class Favorite(models.Model):
     """Избранное."""
     user = models.ForeignKey(
