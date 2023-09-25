@@ -5,9 +5,9 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
-from api.serializers import CustomUserSerializer, FollowSerializer
+from api.serializers import CustomUserSerializer, SubscriptionSerializer
 from api.pagination import CustomPagination
-from users.models import Follow
+from users.models import Subscription
 
 
 User = get_user_model()
@@ -29,14 +29,14 @@ class UserViewSet(UserViewSet):
         author = get_object_or_404(User, id=author_id)
 
         if request.method == 'POST':
-            serializer = FollowSerializer(author, data=request.data,
-                                          context={'request': request})
+            serializer = SubscriptionSerializer(author, data=request.data,
+                                                context={'request': request})
             serializer.is_valid(raise_exception=True)
-            Follow.objects.create(user=user, author=author)
+            Subscription.objects.create(user=user, author=author)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if request.method == 'DELETE':
-            subscription = get_object_or_404(Follow,
+            subscription = get_object_or_404(Subscription,
                                              user=user,
                                              author=author)
             subscription.delete()
@@ -50,7 +50,7 @@ class UserViewSet(UserViewSet):
         user = request.user
         queryset = User.objects.filter(subscribing__user=user)
         pages = self.paginate_queryset(queryset)
-        serializer = FollowSerializer(
+        serializer = SubscriptionSerializer(
             pages,
             many=True,
             context={'request': request}

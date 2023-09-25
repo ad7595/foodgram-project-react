@@ -10,12 +10,12 @@ class RecipeIngredientAdmin(admin.ModelAdmin):
 
 class RecipeAdmin(admin.ModelAdmin):
     list_display = (
-        'pk', 'id', 'title', 'author', 'in_favorite', 'cooking_time'
+        'pk', 'id', 'name', 'author', 'in_favorite', 'cooking_time'
     )
     list_editable = ('cooking_time',)
     readonly_fields = ('in_favorites',)
-    list_filter = ('title', 'author', 'tags')
-    search_fields = ('title', 'author')
+    list_filter = ('name', 'author', 'tags')
+    search_fields = ('name', 'author')
     empty_value_display = '-пусто-'
 
     def in_favorites(self, obj):
@@ -23,14 +23,14 @@ class RecipeAdmin(admin.ModelAdmin):
 
 
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'title', 'measurement_unit')
-    list_filter = ('title',)
+    list_display = ('pk', 'name', 'measurement_unit')
+    list_filter = ('name',)
     empty_value_display = '-пусто-'
 
 
 class TagAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'title', 'color', 'slug')
-    list_editable = ('title', 'color', 'slug')
+    list_display = ('pk', 'name', 'color', 'slug')
+    list_editable = ('name', 'color', 'slug')
     empty_value_display = '-пусто-'
 
 

@@ -10,7 +10,7 @@ User = get_user_model()
 
 class Ingredient(models.Model):
     """Модель ингридиента."""
-    title = models.CharField(max_length=200, verbose_name='Название')
+    name = models.CharField(max_length=200, verbose_name='Название')
     unit = models.CharField(max_length=200, verbose_name='Единица измерения')
 
     class Meta:
@@ -19,12 +19,12 @@ class Ingredient(models.Model):
         ordering = ['name']
 
     def __str__(self):
-        return f'{self.title}, {self.unit}'
+        return f'{self.name}, {self.unit}'
 
 
 class Tag(models.Model):
     """Модель тэгов."""
-    title = models.CharField(
+    name = models.CharField(
         max_length=200,
         unique=True,
         db_index=True,
@@ -47,12 +47,12 @@ class Tag(models.Model):
         verbose_name_plural = 'Теги'
 
     def __str__(self) -> str:
-        return self.title
+        return self.name
 
 
 class Recipe(models.Model):
     """Модель рецепта."""
-    title = models.CharField(
+    name = models.CharField(
         max_length=200,
         verbose_name='Название'
     )
@@ -87,7 +87,7 @@ class Recipe(models.Model):
         ordering = ('-pub_date',)
 
     def __str__(self) -> str:
-        return self.title
+        return self.name
 
 
 class RecipeIngredient(models.Model):
