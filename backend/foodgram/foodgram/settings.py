@@ -21,10 +21,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework.authtoken',
     'rest_framework',
+    'rest_framework.authtoken',
     'djoser',
-    'cats.apps.CatsConfig',
+    'django_filters',
+    'colorfield',
+
+    'users',
+    'recipes',
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -37,7 +42,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'kittygram_backend.urls'
+ROOT_URLCONF = 'foodgram.urls'
+TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 
 TEMPLATES = [
     {

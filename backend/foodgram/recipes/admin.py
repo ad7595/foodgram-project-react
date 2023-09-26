@@ -4,22 +4,16 @@ from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                      ShoppingCart, Tag)
 
 
-class RecipeIngredientAdmin(admin.ModelAdmin):
-    list_display = ('recipe', 'ingredient', 'amount',)
-
-
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = (
-        'pk', 'id', 'name', 'author', 'in_favorite', 'cooking_time'
-    )
-    list_editable = ('cooking_time',)
-    readonly_fields = ('in_favorites',)
-    list_filter = ('name', 'author', 'tags')
-    search_fields = ('name', 'author')
-    empty_value_display = '-пусто-'
+    list_display = ('name', 'id', 'in_favorite',)
+    list_display_links = ('name',)
+    search_fields = ('name',)
+    list_filter = ('author', 'name', 'tags')
+    readonly_fields = ('in_favorite',)
+    filter_horizontal = ('tags',)
 
-    def in_favorites(self, obj):
-        return obj.favorite_recipe.count()
+    def in_favorite(self, obj):
+        return obj.in_favorite.all().count()
 
 
 class IngredientAdmin(admin.ModelAdmin):
@@ -29,23 +23,19 @@ class IngredientAdmin(admin.ModelAdmin):
 
 
 class TagAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'name', 'color', 'slug')
-    list_editable = ('name', 'color', 'slug')
-    empty_value_display = '-пусто-'
+    list_display = ('name', 'color', 'slug',)
+
+
+class RecipeIngredientAdmin(admin.ModelAdmin):
+    list_display = ('recipe', 'ingredient', 'amount',)
 
 
 class FavoriteAdmin(admin.ModelAdmin):
-    list_display = ('user', 'recipe')
-    list_filter = ('user', 'recipe')
-    search_fields = ('user', 'recipe')
-    empty_value_display = '-пусто-'
+    list_display = ('user', 'recipe',)
 
 
 class ShoppingCartAdmin(admin.ModelAdmin):
-    list_display = ('recipe', 'user')
-    list_filter = ('recipe', 'user')
-    search_fields = ('user', )
-    empty_value_display = '-пусто-'
+    list_display = ('user', 'recipe',)
 
 
 admin.site.register(RecipeIngredient, RecipeIngredientAdmin)

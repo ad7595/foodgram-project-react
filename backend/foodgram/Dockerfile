@@ -2,10 +2,10 @@ FROM python:3.9-slim-bullseye
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY . .
+
+RUN pip install --upgrade pip
 
 RUN pip install -r requirements.txt --no-cache-dir
 
-COPY . .
-
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "foodgram.wsgi:application"]
+CMD ["gunicorn", "foodgram.wsgi:application", "--bind", "0:8000" ]
