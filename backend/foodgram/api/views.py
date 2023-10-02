@@ -11,8 +11,9 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from .serializers import (IngredientSerializer, CreateRecipeSerializer,
                           RecipeSerializer, RecipeShortSerializer,
-                          TagSerializer)
-from recipes.models import (Favorite, Ingredient, Tag,
+                          TagSerializer, FavoriteSerializer,
+                          ShoppingCartSerializer)
+from recipes.models import (Ingredient, Tag,
                             Recipe, ShoppingCart, RecipeIngredient)
 
 
@@ -43,6 +44,14 @@ class RecipeViewSet(ModelViewSet):
         if self.action in ('create', 'update', 'partial_update'):
             return CreateRecipeSerializer
         return RecipeSerializer
+
+    @staticmethod
+    def post_del_recipe(request, pk, serializers):
+        data = {'user': request.user.id, 'recipe': pk}
+        serializer = serializers(data=data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete_recipe(self, request, pk, database):
         recipe = get_object_or_404(Recipe, id=pk)
@@ -80,7 +89,7 @@ class RecipeViewSet(ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def favorite(self, request, pk=None):
-        return self.post_del_recipe(request, pk, Favorite)
+        return self.post_del_recipe(request, pk, FavoriteSerializer)
 
     @action(
         detail=True,
@@ -88,7 +97,7 @@ class RecipeViewSet(ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def shopping_cart(self, request, pk):
-        return self.post_del_recipe(request, pk, ShoppingCart)
+        return self.post_del_recipe(request, pk, ShoppingCartSerializer)
 
     @action(
         detail=False,

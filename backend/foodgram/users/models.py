@@ -6,6 +6,15 @@ from django.db import models
 username_validator = UnicodeUsernameValidator()
 
 
+class UserRole:
+    USER = 'user'
+    ADMIN = 'admin'
+    choices = (
+        (USER, 'USER'),
+        (ADMIN, 'ADMIN')
+    )
+
+
 class User(AbstractUser):
     """Настраиваемая модель пользователя."""
     email = models.EmailField(
