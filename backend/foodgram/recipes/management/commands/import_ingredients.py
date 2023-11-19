@@ -1,4 +1,4 @@
-import csv
+import json
 
 from django.core.management import BaseCommand
 
@@ -9,12 +9,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         with open('data/ingredients.json', encoding='utf-8',
                   ) as ingredients_data_file:
-            ingredient_reader = csv.reader(
-                ingredients_data_file, delimiter=','
-            )
-            for ingrideient_row in ingredient_reader:
+            data = json.load(ingredients_data_file)
+            for i in range(len(data)):
                 Ingredient.objects.get_or_create(
-                    name=ingrideient_row[0],
-                    measurement_unit=ingrideient_row[1]
+                    name=data[i].get('name'),
+                    measurement_unit=data[i].get('measurement_unit')
                 )
-        self.stdout.write(self.style.SUCCESS('Импорт выполнен'))
+        print('Импорт выполнен')

@@ -12,6 +12,8 @@ from users.models import Subscription
 
 User = get_user_model()
 
+# проверить вьюсет
+
 
 class UserViewSet(UserViewSet):
     queryset = User.objects.all()
