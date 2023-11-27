@@ -1,6 +1,6 @@
-from django_filters.rest_framework import (FilterSet, AllValuesMultipleFilter,
-                                           BooleanFilter, filters)
-from recipes.models import Recipe, Ingredient
+from django_filters.rest_framework import (FilterSet, BooleanFilter,
+                                           filters)
+from recipes.models import Recipe, Ingredient, Tag
 
 
 class IngredientSearchFilter(FilterSet):
@@ -12,17 +12,21 @@ class IngredientSearchFilter(FilterSet):
 
 
 class RecipeFilter(FilterSet):
-    tags = AllValuesMultipleFilter(field_name='tags__slug')
-    is_favorite = BooleanFilter(method='get_favorite')
+    tags = filters.ModelMultipleChoiceFilter(
+        field_name='tags__slug',
+        to_field_name='slug',
+        queryset=Tag.objects.all()
+    )
+    is_favorited = BooleanFilter(method='get_is_favorited')
     is_in_shopping_cart = BooleanFilter(
         method='get_is_in_shopping_cart'
     )
 
     class Meta:
         model = Recipe
-        fields = ('author', 'tags', 'is_favorite', 'is_in_shopping_cart',)
+        fields = ('author', 'tags', 'is_favorited', 'is_in_shopping_cart',)
 
-    def get_is_favorite(self, queryset, name, value):
+    def get_is_favorited(self, queryset, name, value):
         if self.request.user.is_anonymous:
             return queryset
         return queryset.filter(favorites__user=self.request.user)

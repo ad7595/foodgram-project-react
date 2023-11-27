@@ -1,11 +1,10 @@
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Sum
-from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from recipes.models import Ingredient, Recipe, Tag
 from .pagination import CustomPagination
@@ -15,17 +14,17 @@ from .serializers import (
     IngredientSerializer,
     FavoriteSerializer,
     RecipeSerializer,
+    RecipeCreateSerializer,
     ShoppingCartSerializer,
     TagSerializer,
 )
-from recipes.models import Favorite, RecipeIngredient
+from recipes.models import Favorite, RecipeIngredient, ShoppingCart
 
 
 class TagViewSet(ModelViewSet):
     """Вьюсет тэгов."""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permission_classes = [AllowAny, ]
 
 
 class IngredientViewSet(ModelViewSet):
@@ -48,9 +47,14 @@ class RecipeViewSet(ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
+    def get_serializer_class(self):
+        if self.request.method in SAFE_METHODS:
+            return RecipeSerializer
+        return RecipeCreateSerializer
+
     @staticmethod
-    def add_note(request, pk, current_serializer):
-        data = {'user': request.user.id, 'recipe': pk}
+    def add_recipes(request, id, current_serializer):
+        data = {'user': request.user.id, 'recipe': id}
         serializer = current_serializer(
             data=data, context={'request': request}
         )
@@ -58,10 +62,29 @@ class RecipeViewSet(ModelViewSet):
         serializer.save()
         return Response(status=status.HTTP_201_CREATED, data=serializer.data)
 
+    @staticmethod
+    def delete_recipes(request, id, model):
+        object = model.objects.filter(
+            user=request.user, recipe_id=id
+        )
+        if object.exists():
+            object.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {'error': 'Рецепта нет в списке'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     @action(detail=True, methods=['post'])
     def shopping_cart(self, request, pk):
-        return self.add_note(
-            request, pk, current_serializer=ShoppingCartSerializer
+        return self.add_recipes(
+            request, pk, ShoppingCartSerializer
+        )
+
+    @shopping_cart.mapping.delete
+    def delete_shopping_cart(self, request, pk):
+        return self.delete_recipes(
+            request, pk, ShoppingCart
         )
 
     @action(detail=False, permission_classes=[IsAuthenticated])
@@ -93,12 +116,12 @@ class RecipeViewSet(ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def favorite(self, request, pk):
-        return self.add_note(
-            request, pk, current_serializer=FavoriteSerializer
+        return self.add_recipes(
+            request, pk, FavoriteSerializer
         )
 
-    @action(detail=True, methods=['delete'])
+    @favorite.mapping.delete
     def delete_favorite(self, request, pk):
-        recipe = get_object_or_404(Recipe, id=pk)
-        Favorite.objects.filter(user=request.user, recipe=recipe).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return self.delete_recipes(
+            request, pk, Favorite
+        )

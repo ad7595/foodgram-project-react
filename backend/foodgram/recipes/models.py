@@ -130,6 +130,9 @@ class RecipeIngredient(models.Model):
             )
         ]
 
+    def __str__(self) -> str:
+        return f'{self.ingredient}'
+
 
 class RecipeTag(models.Model):
     """Модель связывающая тэги и рецепты."""
