@@ -16,7 +16,7 @@ class UserRole:
 
 
 class User(AbstractUser):
-    """Настраиваемая модель пользователя."""
+    """Модель пользователя."""
     email = models.EmailField(
         max_length=254,
         unique=True,
