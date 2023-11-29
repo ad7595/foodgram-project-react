@@ -1,7 +1,9 @@
-import os
 import json
-from django.core.management import BaseCommand
+import os
+
 from django.conf import settings
+from django.core.management import BaseCommand
+
 from recipes.models import Ingredient
 
 

@@ -1,37 +1,32 @@
+from django.db.models import Sum
+from django.http import HttpResponse
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
-from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Sum
-from django.http import HttpResponse
-from recipes.models import Ingredient, Recipe, Tag
-from .pagination import CustomPagination
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingCart, Tag)
 from .filters import IngredientSearchFilter, RecipeFilter
+from .pagination import CustomPagination
 from .permissions import IsAuthorOrAdminOrReadOnly
-from .serializers import (
-    IngredientSerializer,
-    FavoriteSerializer,
-    RecipeSerializer,
-    RecipeCreateSerializer,
-    ShoppingCartSerializer,
-    TagSerializer,
-)
-from recipes.models import Favorite, RecipeIngredient, ShoppingCart
+from .serializers import (FavoriteSerializer, IngredientSerializer,
+                          RecipeCreateSerializer, RecipeSerializer,
+                          ShoppingCartSerializer, TagSerializer)
 
 
-class TagViewSet(ModelViewSet):
+class TagViewSet(ReadOnlyModelViewSet):
     """Вьюсет тэгов."""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
 
-class IngredientViewSet(ModelViewSet):
+class IngredientViewSet(ReadOnlyModelViewSet):
     """Вьюсет игридиентов."""
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    permission_classes = [AllowAny, ]
+    permission_classes = (AllowAny, )
     pagination_class = None
     filter_backends = (DjangoFilterBackend,)
     filterset_class = IngredientSearchFilter
@@ -42,7 +37,7 @@ class RecipeViewSet(ModelViewSet):
     """Вьюсет рецептов."""
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    permission_classes = [IsAuthorOrAdminOrReadOnly, ]
+    permission_classes = (IsAuthorOrAdminOrReadOnly, )
     pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter

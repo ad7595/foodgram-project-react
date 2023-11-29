@@ -1,6 +1,5 @@
-from django_filters.rest_framework import (FilterSet, BooleanFilter,
-                                           filters)
-from recipes.models import Recipe, Ingredient, Tag
+from django_filters.rest_framework import BooleanFilter, FilterSet, filters
+from recipes.models import Ingredient, Recipe, Tag
 
 
 class IngredientSearchFilter(FilterSet):
@@ -27,11 +26,11 @@ class RecipeFilter(FilterSet):
         fields = ('author', 'tags', 'is_favorited', 'is_in_shopping_cart',)
 
     def get_is_favorited(self, queryset, name, value):
-        if self.request.user.is_anonymous:
-            return queryset
-        return queryset.filter(favorites__user=self.request.user)
+        if self.request.user.is_authenticated:
+            return queryset.filter(favorites__user=self.request.user)
+        return queryset
 
     def get_is_in_shopping_cart(self, queryset, name, value):
-        if self.request.user.is_anonymous:
-            return queryset
-        return queryset.filter(shopping_cart__user=self.request.user)
+        if self.request.user.is_authenticated:
+            return queryset.filter(shopping_cart__user=self.request.user)
+        return queryset
