@@ -8,7 +8,7 @@ username_validator = UnicodeUsernameValidator()
 class UserRole:
     USER = 'user'
     ADMIN = 'admin'
-    choices = (
+    CHOICES = (
         (USER, 'USER'),
         (ADMIN, 'ADMIN')
     )
@@ -34,15 +34,15 @@ class User(AbstractUser):
     username = models.CharField(
         max_length=150,
         unique=True,
-        validators=[username_validator],
+        validators=(username_validator,),
         verbose_name='Username'
     )
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = [
+    REQUIRED_FIELDS = (
         'username',
         'first_name',
         'last_name',
-    ]
+    )
 
     class Meta:
         ordering = ('id',)

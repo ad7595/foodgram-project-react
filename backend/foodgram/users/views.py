@@ -1,14 +1,16 @@
-from api.pagination import CustomPagination
-from api.serializers import CustomUserSerializer, SubscriptionSerializer
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from djoser.views import UserViewSet
+
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from users.models import Subscription
+from djoser.views import UserViewSet
+
+from api.pagination import CustomPagination
+from api.serializers import CustomUserSerializer, SubscriptionSerializer
+from .models import Subscription
 
 User = get_user_model()
 
@@ -51,15 +53,6 @@ class CustomUserViewSet(UserViewSet):
                 status=status.HTTP_201_CREATED,
                 data=serializer.data
             )
-
-        if request.method == 'DELETE':
-            subscription = get_object_or_404(
-                Subscription,
-                user=user,
-                author=author
-            )
-            subscription.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
 
         return Response(status=status.HTTP_400_BAD_REQUEST)
 

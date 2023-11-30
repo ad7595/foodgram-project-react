@@ -27,12 +27,13 @@ class CustomUserSerializer(UserSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
-        if not request or request.user.is_anonymous:
-            return False
-        return Subscription.objects.filter(
-            user=request.user,
-            author=obj
-        ).exists()
+        return (
+            request
+            and not request.user.is_anonymous
+            and Subscription.objects.filter(
+                user=request.user, author=obj
+            ).exists()
+        )
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
@@ -52,12 +53,13 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
-        if not request or request.user.is_anonymous:
-            return False
-        return Subscription.objects.filter(
-            user=request.user,
-            author=obj
-        ).exists()
+        return (
+            request
+            and not request.user.is_anonymous
+            and Subscription.objects.filter(
+                user=request.user, author=obj
+            ).exists()
+        )
 
     def get_recipes_count(self, obj):
         return Recipe.objects.filter(author=obj).count()
@@ -162,14 +164,14 @@ class AddRecipeIngredientsSerializer(serializers.ModelSerializer):
         model = RecipeIngredient
         fields = ('id', 'amount')
 
-    def create(self, validated_data):
-        return RecipeIngredient.objects.create(
-            ingredient=validated_data['id'],
-            amount=validated_data['amount'],
-        )
+    # def create(self, validated_data):
+    #     return RecipeIngredient.objects.create(
+    #         ingredient=validated_data['id'],
+    #         amount=validated_data['amount'],
+    #     )
 
     def validate_amount(self, data):
-        if int(data) <= 1:
+        if not data or len(data) <= 1:
             raise serializers.ValidationError(
                 'Количество ингредиента должно быть больше или равно 1!'
             )
@@ -205,17 +207,23 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
-        if not request or request.user.is_anonymous:
-            return False
-        return Favorite.objects.filter(user=request.user, recipe=obj).exists()
+        return (
+            request
+            and not request.user.is_anonymous
+            and Favorite.objects.filter(
+                user=request.user, recipe=obj
+            ).exists()
+        )
 
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
-        if not request or request.user.is_anonymous:
-            return False
-        return ShoppingCart.objects.filter(
-            user=request.user, recipe=obj
-        ).exists()
+        return (
+            request
+            and not request.user.is_anonymous
+            and ShoppingCart.objects.filter(
+                user=request.user, recipe=obj
+            ).exists()
+        )
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
@@ -240,19 +248,19 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def create_ingredients(ingredients, recipe):
-        for i in ingredients:
+        for ingredient in ingredients:
             RecipeIngredient.objects.create(
                 recipe=recipe,
-                ingredient_id=i['id'],
-                amount=i['amount'],
+                ingredient_id=ingredient['id'],
+                amount=ingredient['amount'],
             )
 
     def validate(self, data):
         ingredients = self.initial_data.get('ingredients')
         uniq_ingredients = set()
 
-        for i in ingredients:
-            ingredient_id = i['id']
+        for ingredient in ingredients:
+            ingredient_id = ingredient['id']
             if ingredient_id in uniq_ingredients:
                 raise serializers.ValidationError(
                     'Вы уже использовали этот ингридиент!'

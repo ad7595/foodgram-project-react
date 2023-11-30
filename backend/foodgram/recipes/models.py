@@ -21,7 +21,7 @@ class Ingredient(models.Model):
     )
 
     class Meta:
-        ordering = 'name'
+        ordering = ('name',)
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
 
@@ -114,8 +114,8 @@ class RecipeIngredient(models.Model):
         verbose_name='Ингредиент'
     )
     amount = models.PositiveSmallIntegerField(
-        validators=MinValueValidator(MIN_AMOUNT),
-        verbose_name='Количество'
+        validators=(MinValueValidator(MIN_AMOUNT),),
+        verbose_name='Количество',
     )
 
     class Meta:
@@ -128,28 +128,6 @@ class RecipeIngredient(models.Model):
 
     def __str__(self) -> str:
         return f'{self.ingredient}'
-
-
-# class RecipeTag(models.Model):
-#     """Модель связывающая тэги и рецепты."""
-#     recipe = models.ForeignKey(
-#         Recipe,
-#         on_delete=models.CASCADE,
-#         verbose_name='Рецепт'
-#     )
-#     tag = models.ForeignKey(
-#         Tag,
-#         on_delete=models.CASCADE,
-#         verbose_name='Тег'
-#     )
-
-#     class Meta:
-#         constraints = [
-#             models.UniqueConstraint(
-#                 fields=['recipe', 'tag'],
-#                 name='recipe_tag_unique'
-#             )
-#         ]
 
 
 class Favorite(models.Model):
