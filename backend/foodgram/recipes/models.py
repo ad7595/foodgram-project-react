@@ -79,9 +79,11 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время готовки',
-        validators=MinValueValidator(
+        validators=(
+            MinValueValidator(
                 MIN_COOKING_TIME, message='Время готовки минимум 1 минута!'
             ),
+        )
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,
@@ -186,3 +188,26 @@ class ShoppingCart(models.Model):
 
     def __str__(self):
         return f'"{self.recipe}" добавлен в Корзину покупок'
+
+
+class RecipeTag(models.Model):
+    """Модель связывающая тэги и рецепты."""
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        verbose_name='Рецепт'
+    )
+
+    tag = models.ForeignKey(
+        Tag,
+        on_delete=models.CASCADE,
+        verbose_name='Тег'
+    )
+
+    class Meta:
+        constraints = [ 
+            models.UniqueConstraint( 
+                fields=['recipe', 'tag'], 
+                name='recipe_tag_unique'
+            )
+        ]

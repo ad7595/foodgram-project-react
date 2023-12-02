@@ -1,10 +1,11 @@
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from djoser.serializers import UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                            ShoppingCart, Tag)
+                            RecipeTag, ShoppingCart, Tag)
 from users.models import Subscription
 
 User = get_user_model()
@@ -248,15 +249,17 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def create_ingredients(ingredients, recipe):
-        for ingredient in ingredients:
-            RecipeIngredient.objects.create(
+        recipe_ingredients = [
+            RecipeIngredient(
                 recipe=recipe,
                 ingredient_id=ingredient['id'],
-                amount=ingredient['amount'],
+                amount=ingredient['amount']
             )
+            for ingredient in ingredients
+        ]
+        RecipeIngredient.objects.bulk_create(recipe_ingredients)
 
-    def validate(self, data):
-        ingredients = self.initial_data.get('ingredients')
+    def validate_ingredients(self, ingredients):
         uniq_ingredients = set()
 
         for ingredient in ingredients:
@@ -266,12 +269,14 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                     'Вы уже использовали этот ингридиент!'
                 )
             uniq_ingredients.add(ingredient_id)
+        return ingredients
 
+    def validate_cooking_time(self, data):
         if data['cooking_time'] < 0:
             raise serializers.ValidationError('Укажите время готовки!')
-
         return data
 
+    @transaction.atomic
     def create(self, validated_data):
         ingredients = validated_data['ingredients']
         tags = validated_data['tags']
@@ -283,12 +288,21 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         self.create_ingredients(ingredients, recipe)
         return recipe
 
+    @transaction.atomic
     def update(self, obj, validated_data):
         ingredients = validated_data['ingredients']
+        tags = validated_data['tags']
         recipe = obj
         RecipeIngredient.objects.filter(recipe=recipe).delete()
-        self.create_ingredients(ingredients, recipe)
-        return super().update(recipe, validated_data)
+        for ingredient in ingredients:
+            RecipeIngredient.objects.create(
+                recipe=recipe,
+                ingredient=ingredient['ingredient'],
+                amount=ingredient['amount'],
+            )
+        for tag in tags:
+            RecipeTag.objects.create(recipe=recipe, tag=tag)
+        super().update(recipe, validated_data).save()
 
     def to_representation(self, obj):
         serializer = RecipeSerializer(obj, context=self.context)
