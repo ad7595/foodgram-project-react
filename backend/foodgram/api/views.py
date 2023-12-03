@@ -10,7 +10,6 @@ from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
 from .filters import IngredientSearchFilter, RecipeFilter
 from .pagination import CustomPagination
-from .permissions import IsAuthorOrAdminOrReadOnly
 from .serializers import (FavoriteSerializer, IngredientSerializer,
                           RecipeCreateSerializer, RecipeSerializer,
                           ShoppingCartSerializer, TagSerializer)
@@ -37,7 +36,7 @@ class RecipeViewSet(ModelViewSet):
     """Вьюсет рецептов."""
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    permission_classes = (IsAuthorOrAdminOrReadOnly, )
+    permission_classes = (IsAuthenticated,)
     pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
@@ -108,6 +107,7 @@ class RecipeViewSet(ModelViewSet):
         filename = 'shopping_list'
         response = HttpResponse(shopping_list, content_type='text/plain')
         response['Content-Disposition'] = f'attachment; filename={filename}'
+        return response
 
     @action(detail=True, methods=['post'])
     def favorite(self, request, pk):

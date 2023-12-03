@@ -42,24 +42,33 @@ class CustomUserViewSet(UserViewSet):
         author = get_object_or_404(User, id=author_id)
 
         if request.method == 'POST':
+            subscription = Subscription.objects.create(
+                user=user, author=author
+            )
             serializer = SubscriptionSerializer(
-                author,
+                subscription,
                 data=request.data,
                 context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
-            Subscription.objects.create(user=user, author=author)
             return Response(
                 status=status.HTTP_201_CREATED,
                 data=serializer.data
             )
 
+        if request.method == 'DELETE':
+            Subscription.objects.filter(user=user, author=author).delete()
+            return Response(
+                status=status.HTTP_200_OK,
+            )
+
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(
-        detail=True,
+        detail=False,
         methods=['get'],
-        permission_classes=[IsAuthenticated]
+        permission_classes=[IsAuthenticated],
+        serializer_class=SubscriptionSerializer
     )
     def subscriptions(self, request):
         queryset = Subscription.objects.filter(user=request.user)

@@ -31,8 +31,8 @@ class CustomUserSerializer(UserSerializer):
         return (
             request
             and not request.user.is_anonymous
-            and Subscription.objects.filter(
-                user=request.user, author=obj
+            and request.user.follower.filter(
+                author=obj
             ).exists()
         )
 
@@ -42,11 +42,26 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField(read_only=True)
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
+    id = serializers.IntegerField(source='author.id', required=False)
+    email = serializers.EmailField(source='author.email', required=False)
+    username = serializers.CharField(source='author.username', required=False)
+    first_name = serializers.CharField(
+        source='author.first_name',
+        required=False
+    )
+    last_name = serializers.CharField(
+        source='author.last_name',
+        required=False
+    )
 
-    class Meta(UserSerializer.Meta):
-        model = User
+    class Meta:
+        model = Subscription
         fields = (
+            'id',
             'email',
+            'username',
+            'first_name',
+            'last_name',
             'is_subscribed',
             'recipes',
             'recipes_count',
@@ -58,17 +73,17 @@ class SubscriptionSerializer(serializers.ModelSerializer):
             request
             and not request.user.is_anonymous
             and Subscription.objects.filter(
-                user=request.user, author=obj
+                user=request.user, author=obj.author
             ).exists()
         )
 
     def get_recipes_count(self, obj):
-        return Recipe.objects.filter(author=obj).count()
+        return Recipe.objects.filter(author=obj.author).count()
 
     def get_recipes(self, obj):
+        recipes = Recipe.objects.filter(author=obj.author)
         serializer = ShortRecipeSerializer(
-            recipes=Recipe.objects.filter(author=obj),
-            context=self.context,
+            recipes,
             many=True,
             read_only=True,
         )
@@ -164,12 +179,6 @@ class AddRecipeIngredientsSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecipeIngredient
         fields = ('id', 'amount')
-
-    # def create(self, validated_data):
-    #     return RecipeIngredient.objects.create(
-    #         ingredient=validated_data['id'],
-    #         amount=validated_data['amount'],
-    #     )
 
     def validate_amount(self, data):
         if not data or len(data) <= 1:
