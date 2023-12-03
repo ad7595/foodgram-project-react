@@ -207,9 +207,9 @@ class RecipeTag(models.Model):
     )
 
     class Meta:
-        constraints = [ 
-            models.UniqueConstraint( 
-                fields=['recipe', 'tag'], 
+        constraints = [
+            models.UniqueConstraint(
+                fields=['recipe', 'tag'],
                 name='recipe_tag_unique'
             )
         ]
