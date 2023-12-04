@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
+
 from .filters import IngredientSearchFilter, RecipeFilter
 from .pagination import CustomPagination
 from .serializers import (FavoriteSerializer, IngredientSerializer,
@@ -36,7 +37,7 @@ class RecipeViewSet(ModelViewSet):
     """Вьюсет рецептов."""
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
     pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter

@@ -180,12 +180,12 @@ class AddRecipeIngredientsSerializer(serializers.ModelSerializer):
         model = RecipeIngredient
         fields = ('id', 'amount')
 
-    def validate_amount(self, data):
-        if not data or len(data) <= 1:
+    def validate_amount(self, value):
+        if value <= 1:
             raise serializers.ValidationError(
                 'Количество ингредиента должно быть больше или равно 1!'
             )
-        return data
+        return value
 
 
 class RecipeSerializer(serializers.ModelSerializer):

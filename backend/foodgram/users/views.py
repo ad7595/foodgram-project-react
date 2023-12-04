@@ -56,11 +56,11 @@ class CustomUserViewSet(UserViewSet):
                 data=serializer.data
             )
 
-        if request.method == 'DELETE':
-            Subscription.objects.filter(user=user, author=author).delete()
-            return Response(
-                status=status.HTTP_200_OK,
-            )
+        # if request.method == 'DELETE':
+        #     Subscription.objects.filter(user=user, author=author).delete()
+        #     return Response(
+        #         status=status.HTTP_200_OK,
+        #     )
 
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
