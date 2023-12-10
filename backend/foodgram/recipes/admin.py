@@ -1,27 +1,16 @@
-from django import forms
 from django.contrib import admin
 
 from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                      ShoppingCart, Tag)
 
 
-class RecipeForm(forms.ModelForm):
-    class Meta:
-        fields = (
-            'name',
-            'author',
-            'image',
-            'text',
-            'cooking_time',
-            'tags',
-            'ingredients',
-        )
-        model = Recipe
+class IngredientInline(admin.TabularInline):
+    model = RecipeIngredient
+    extra = 3
+    min_num = 1
 
 
 class RecipeAdmin(admin.ModelAdmin):
-    add_form = RecipeForm
-    form = RecipeForm
     list_display = (
         'name',
         'author',
@@ -32,10 +21,12 @@ class RecipeAdmin(admin.ModelAdmin):
         'get_tags',
         'get_ingredients',
     )
+    inlines = (IngredientInline,)
     list_display_links = ('name',)
     search_fields = ('name',)
     list_filter = ('author', 'name', 'tags', 'ingredients',)
     filter_horizontal = ('tags',)
+    empty_value_display = '-пусто-'
 
 
 class IngredientAdmin(admin.ModelAdmin):
