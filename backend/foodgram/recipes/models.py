@@ -1,7 +1,7 @@
-from colorfield import fields
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
+from colorfield import fields
 
 MIN_AMOUNT = 1
 MIN_COOKING_TIME = 1
