@@ -94,30 +94,19 @@ class TagSerializer(serializers.ModelSerializer):
     """Сериализатор тегов."""
     class Meta:
         model = Tag
-        fields = (
+        fields = [
             'id',
             'name',
             'color',
             'slug'
-        )
+        ]
 
 
 class IngredientSerializer(serializers.ModelSerializer):
     """Сериализатор ингридиентов."""
     class Meta:
         model = Ingredient
-        fields = ('name', 'measurement_unit')
-
-
-class RecipeIngredientSerializer(serializers.ModelSerializer):
-    name = serializers.ReadOnlyField(source='ingredient.name')
-    measurement_unit = serializers.ReadOnlyField(
-        source='ingredient.measurement_unit'
-    )
-
-    class Meta:
-        model = RecipeIngredient
-        fields = ('name', 'amount', 'measurement_unit')
+        fields = ['id', 'name', 'measurement_unit']
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
@@ -156,7 +145,7 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор карточки рецепта."""
     class Meta:
         model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
+        fields = ['id', 'name', 'image', 'cooking_time']
 
 
 class RecipeIngredientsSerializer(serializers.ModelSerializer):
@@ -174,18 +163,12 @@ class RecipeIngredientsSerializer(serializers.ModelSerializer):
 
 class AddRecipeIngredientsSerializer(serializers.ModelSerializer):
     """Сериализатор добавления ингридиента в рецепт."""
-    id = serializers.ReadOnlyField(source='ingredient.id')
+    id = serializers.IntegerField()
+    amount = serializers.IntegerField()
 
     class Meta:
-        model = RecipeIngredient
-        fields = ('id', 'amount')
-
-    def validate_amount(self, value):
-        if value <= 1:
-            raise serializers.ValidationError(
-                'Количество ингредиента должно быть больше или равно 1!'
-            )
-        return value
+        model = Ingredient
+        fields = ['id', 'amount']
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -202,18 +185,14 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = (
-            'id',
-            'name',
-            'author',
-            'image',
-            'text',
-            'cooking_time',
-            'tags',
-            'ingredients',
-            'is_favorited',
-            'is_in_shopping_cart',
-        )
+        fields = ('id', 'tags', 'author', 'ingredients',
+                  'is_favorited', 'is_in_shopping_cart',
+                  'name', 'image', 'text', 'cooking_time',
+                  )
+
+    def get_ingredients(self, obj):
+        ingredients = RecipeIngredientsSerializer.objects.filter(recipe=obj)
+        return RecipeIngredientsSerializer(ingredients, many=True).data
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
@@ -241,20 +220,22 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     image = Base64ImageField()
     ingredients = AddRecipeIngredientsSerializer(many=True)
-    tags = TagSerializer(many=True)
+    tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(),
+                                              many=True,
+                                              required=True)
 
     class Meta:
         model = Recipe
-        fields = (
-            'id',
+        fields = [
+            # 'id',
             'name',
             'author',
             'image',
             'text',
             'cooking_time',
             'ingredients',
-            'tags',
-        )
+            'tags'
+        ]
 
     @staticmethod
     def create_ingredients(ingredients, recipe):
@@ -280,15 +261,15 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             uniq_ingredients.add(ingredient_id)
         return ingredients
 
-    def validate_cooking_time(self, data):
-        if data['cooking_time'] < 0:
+    def validate_cooking_time(self, cooking_time):
+        if cooking_time < 0:
             raise serializers.ValidationError('Укажите время готовки!')
-        return data
+        return cooking_time
 
     @transaction.atomic
     def create(self, validated_data):
-        ingredients = validated_data['ingredients']
-        tags = validated_data['tags']
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(
             **validated_data,
             author=self.context['request'].user,

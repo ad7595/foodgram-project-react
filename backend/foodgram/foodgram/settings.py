@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'djoser',
     'django_filters',
     'colorfield',
+    'admin_interface',
 
     'users',
     'recipes',
@@ -98,7 +99,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+        'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',

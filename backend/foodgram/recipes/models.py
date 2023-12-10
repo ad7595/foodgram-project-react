@@ -24,24 +24,30 @@ class Ingredient(models.Model):
         ordering = ('name',)
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'measurement_unit'],
+                name='unique_name_and_measurement'
+            )
+        ]
 
     def __str__(self):
         return f'{self.name}, {self.measurement_unit}'
 
 
 class Tag(models.Model):
-    """Модель тэгов."""
+    """Модель тегов."""
     name = models.CharField(
         max_length=200,
         unique=True,
         db_index=True,
-        verbose_name='Тэг'
+        verbose_name='Тег'
     )
     color = fields.ColorField(
         max_length=7,
         unique=True,
         format='hex',
-        verbose_name='HEX-код'
+        verbose_name='HEX-код',
     )
     slug = models.SlugField(
         max_length=200,
@@ -52,6 +58,10 @@ class Tag(models.Model):
     class Meta:
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
+
+    def clean(self):
+        self.color = self.color.upper()
+        super().clean
 
     def __str__(self) -> str:
         return self.name
@@ -92,11 +102,24 @@ class Recipe(models.Model):
         Tag,
         verbose_name='Теги',
     )
+    ingredients = models.ManyToManyField(
+        'Ingredient',
+        through='RecipeIngredient',
+        through_fields=('recipe', 'ingredient'),
+        related_name='ingredients',
+        verbose_name='Ингридиенты'
+    )
 
     class Meta:
         ordering = ('-pub_date',)
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
+
+    def get_tags(self):
+        return "\n".join([i.name for i in self.tags.all()])
+
+    def get_ingredients(self):
+        return "\n".join([i.name for i in self.ingredients.all()])
 
     def __str__(self) -> str:
         return self.name
@@ -192,7 +215,7 @@ class ShoppingCart(models.Model):
 
 
 class RecipeTag(models.Model):
-    """Модель связывающая тэги и рецепты."""
+    """Модель связывающая теги и рецепты."""
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,

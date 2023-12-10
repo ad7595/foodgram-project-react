@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
+from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
@@ -17,7 +17,7 @@ from .serializers import (FavoriteSerializer, IngredientSerializer,
 
 
 class TagViewSet(ReadOnlyModelViewSet):
-    """Вьюсет тэгов."""
+    """Вьюсет тегов."""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
@@ -26,7 +26,6 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     """Вьюсет игридиентов."""
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    permission_classes = (AllowAny, )
     pagination_class = None
     filter_backends = (DjangoFilterBackend,)
     filterset_class = IngredientSearchFilter
@@ -37,7 +36,6 @@ class RecipeViewSet(ModelViewSet):
     """Вьюсет рецептов."""
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    permission_classes = (AllowAny,)
     pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter

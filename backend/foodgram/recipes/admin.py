@@ -1,14 +1,40 @@
+from django import forms
 from django.contrib import admin
 
 from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                      ShoppingCart, Tag)
 
 
+class RecipeForm(forms.ModelForm):
+    class Meta:
+        fields = (
+            'name',
+            'author',
+            'image',
+            'text',
+            'cooking_time',
+            'tags',
+            'ingredients',
+        )
+        model = Recipe
+
+
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+    add_form = RecipeForm
+    form = RecipeForm
+    list_display = (
+        'name',
+        'author',
+        'image',
+        'text',
+        'cooking_time',
+        'pub_date',
+        'get_tags',
+        'get_ingredients',
+    )
     list_display_links = ('name',)
     search_fields = ('name',)
-    list_filter = ('author', 'name', 'tags')
+    list_filter = ('author', 'name', 'tags', 'ingredients',)
     filter_horizontal = ('tags',)
 
 

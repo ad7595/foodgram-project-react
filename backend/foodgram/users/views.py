@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from djoser.views import UserViewSet
@@ -20,6 +20,8 @@ class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
     pagination_class = CustomPagination
+    permission_classes = (AllowAny, )
+    http_method_names = ('get', 'post', 'head', 'delete')
 
     @action(
         detail=False,
@@ -56,13 +58,11 @@ class CustomUserViewSet(UserViewSet):
                 data=serializer.data
             )
 
-        # if request.method == 'DELETE':
-        #     Subscription.objects.filter(user=user, author=author).delete()
-        #     return Response(
-        #         status=status.HTTP_200_OK,
-        #     )
-
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        subscription = get_object_or_404(
+            Subscription, user=request.user, author=author
+        )
+        subscription.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False,
