@@ -44,13 +44,14 @@ class CustomUserViewSet(UserViewSet):
         author = get_object_or_404(User, id=author_id)
 
         if request.method == 'POST':
+            recipes_limit = request.query_params.get('recipes_limit')
             subscription = Subscription.objects.create(
                 user=user, author=author
             )
             serializer = SubscriptionSerializer(
                 subscription,
                 data=request.data,
-                context={'request': request}
+                context={'request': request, 'recipes_limit': recipes_limit}
             )
             serializer.is_valid(raise_exception=True)
             return Response(

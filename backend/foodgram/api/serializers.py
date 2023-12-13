@@ -82,6 +82,9 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
     def get_recipes(self, obj):
         recipes = Recipe.objects.filter(author=obj.author)
+        recipes_limit = self.context.get('recipes_limit')
+        if recipes_limit:
+            recipes = recipes[:int(recipes_limit)]
         serializer = ShortRecipeSerializer(
             recipes,
             many=True,
@@ -227,7 +230,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = [
-            # 'id',
             'name',
             'author',
             'image',

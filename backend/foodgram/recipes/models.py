@@ -71,6 +71,7 @@ class Recipe(models.Model):
     """Модель рецептов."""
     name = models.CharField(
         max_length=200,
+        unique=True,
         verbose_name='Название'
     )
     author = models.ForeignKey(
