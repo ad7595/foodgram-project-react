@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
@@ -10,7 +11,9 @@ from djoser.views import UserViewSet
 
 from api.pagination import CustomPagination
 from api.serializers import CustomUserSerializer, SubscriptionSerializer
+
 from .models import Subscription
+from .admin import UserForm
 
 User = get_user_model()
 
@@ -22,6 +25,12 @@ class CustomUserViewSet(UserViewSet):
     pagination_class = CustomPagination
     permission_classes = (AllowAny, )
     http_method_names = ('get', 'post', 'head', 'delete')
+
+    def create(self, request, *args, **kwargs):
+        form = UserForm(request.data)
+        if not form.is_valid():
+            raise ValidationError(form.errors)
+        return super().create(request, *args, **kwargs)
 
     @action(
         detail=False,
@@ -44,14 +53,13 @@ class CustomUserViewSet(UserViewSet):
         author = get_object_or_404(User, id=author_id)
 
         if request.method == 'POST':
-            recipes_limit = request.query_params.get('recipes_limit')
             subscription = Subscription.objects.create(
                 user=user, author=author
             )
             serializer = SubscriptionSerializer(
                 subscription,
                 data=request.data,
-                context={'request': request, 'recipes_limit': recipes_limit}
+                context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
             return Response(
@@ -73,10 +81,11 @@ class CustomUserViewSet(UserViewSet):
     )
     def subscriptions(self, request):
         queryset = Subscription.objects.filter(user=request.user)
+        recipes_limit = request.query_params.get('recipes_limit')
         pages = self.paginate_queryset(queryset)
         serializer = SubscriptionSerializer(
             pages,
             many=True,
-            context={'request': request}
+            context={'request': request, 'recipes_limit': recipes_limit}
         )
         return self.get_paginated_response(serializer.data)

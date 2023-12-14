@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
@@ -54,6 +55,13 @@ class User(AbstractUser):
         ordering = ('id',)
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+
+    def clean(self):
+        if len(self.password) > 150:
+            raise ValidationError(
+                {'password': 'Пароль должен быть не более 150 символов.'}
+            )
+        return super().clean()
 
     def __str__(self) -> str:
         return self.username

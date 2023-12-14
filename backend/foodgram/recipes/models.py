@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
-from colorfield import fields
 
 MIN_AMOUNT = 1
 MIN_COOKING_TIME = 1
@@ -43,10 +42,9 @@ class Tag(models.Model):
         db_index=True,
         verbose_name='Тег'
     )
-    color = fields.ColorField(
+    color = models.CharField(
         max_length=7,
         unique=True,
-        format='hex',
         verbose_name='HEX-код',
     )
     slug = models.SlugField(
@@ -139,7 +137,7 @@ class RecipeIngredient(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Ингредиент'
     )
-    amount = models.PositiveSmallIntegerField(
+    amount = models.IntegerField(
         validators=(MinValueValidator(MIN_AMOUNT),),
         verbose_name='Количество',
     )

@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, SAFE_METHODS, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
@@ -38,15 +38,13 @@ class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     pagination_class = CustomPagination
-    permission_classes = (AllowAny,)
+    permission_classes = (IsOwner,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
-    http_method_names = ('get', 'post', 'head', 'delete', 'patch')
 
     @action(
         detail=False,
         methods=['get'],
-        permission_classes=[IsOwner]
     )
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
