@@ -13,7 +13,6 @@ from api.pagination import CustomPagination
 from api.serializers import CustomUserSerializer, SubscriptionSerializer
 
 from .models import Subscription
-from .admin import UserForm
 
 User = get_user_model()
 
@@ -27,9 +26,11 @@ class CustomUserViewSet(UserViewSet):
     http_method_names = ('get', 'post', 'head', 'delete')
 
     def create(self, request, *args, **kwargs):
-        form = UserForm(request.data)
-        if not form.is_valid():
-            raise ValidationError(form.errors)
+        password = request.data.get('password')
+        if len(password) > 150:
+            raise ValidationError(
+                'Пароль должен быть не более 150 символов.'
+            )
         return super().create(request, *args, **kwargs)
 
     @action(
