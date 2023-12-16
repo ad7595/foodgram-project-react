@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 
 MIN_AMOUNT = 1
@@ -46,6 +46,12 @@ class Tag(models.Model):
         max_length=7,
         unique=True,
         verbose_name='HEX-код',
+        validators=[
+            RegexValidator(
+                regex='^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$',
+                message='Проверьте введенные данные на соответствие HEX-коду.',
+            )
+        ],
     )
     slug = models.SlugField(
         max_length=200,
@@ -137,8 +143,8 @@ class RecipeIngredient(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Ингредиент'
     )
-    amount = models.IntegerField(
-        validators=(MinValueValidator(MIN_AMOUNT),),
+    amount = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(MIN_AMOUNT)],
         verbose_name='Количество',
     )
 

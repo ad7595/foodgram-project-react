@@ -24,7 +24,6 @@ class CustomUserSerializer(UserSerializer):
             'first_name',
             'last_name',
             'is_subscribed',
-            'password'
         )
 
     def get_is_subscribed(self, obj):
@@ -262,6 +261,14 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                     'Вы уже использовали этот ингридиент!'
                 )
             uniq_ingredients.add(ingredient_id)
+            if int(ingredient.get('amount')) < 1:
+                raise serializers.ValidationError(
+                    'Количество ингредиента должно быть больше 0'
+                )
+            if int(ingredient.get('amount')) > 32767:
+                raise serializers.ValidationError(
+                    'Количество ингредиента должно быть не больше 32767'
+                )
         return ingredients
 
     def validate_cooking_time(self, cooking_time):
